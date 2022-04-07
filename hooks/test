@@ -6,14 +6,16 @@ fi
 if test -f ./local.conf; then
     source ./local.conf
 fi
-
 SHA=$(git rev-parse HEAD)
 CHANGES=$(git ls-files -m -o --exclude-standard)
 
 if [ "$SHA" != "$last_test_commit" ] || [ ! -z "$CHANGES" ]
 then
     echo "testing..."
-    go test .
+    export TEST_ID=test-go-bucketfs_$(id -u -nr)_$(date +%F_%H-%M-%S)
+    export CLOUDSDK_CORE_PROJECT=$CLOUDSDK_CORE_PROJECT
+    export GOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS
+    go test . ./gcp
     test -f ./local.conf && $((cat local.conf | grep -v last_test_commit)> local.new.conf)
     echo "last_test_commit=$SHA" >> local.new.conf
     test -f ./local.conf && rm local.conf

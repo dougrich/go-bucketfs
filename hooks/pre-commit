@@ -7,7 +7,7 @@ if test -f ./local.conf; then
     source ./local.conf
 fi 
 
-HASFMT=$(gofmt -l .)
+HASFMT=$(gofmt -l . ./gcp)
 EXITCODE=0
 if [ ! -z "$HASFMT" ]
 then
@@ -15,7 +15,10 @@ then
     exitcode=-1
 fi
 
-go test .
+export TEST_ID=test-go-bucketfs_$(id -u -nr)_$(date +%F_%H-%M-%S)
+export CLOUDSDK_CORE_PROJECT=$CLOUDSDK_CORE_PROJECT
+export GOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS
+go test . ./gcp
 if [ $? -ne 0 ]
 then
     echo -e "\033[1mTests need to pass before commit\033[0m"

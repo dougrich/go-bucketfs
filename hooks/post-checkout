@@ -34,3 +34,53 @@ do
         break
     fi
 done
+
+# check that we have gcloud installed
+while :
+do
+    gcloudv=$(gcloud --version)
+    if [ 0 -ne $? ]
+    then
+        echo -e "\033[1mgcloud needs to be installed\033[0m (https://cloud.google.com/sdk/docs/install-sdk)"
+        echo -e "Press enter once gcloud is installed"
+        read -r gcloudv
+    else
+        break
+    fi
+done
+
+if [ -z $CLOUDSDK_CORE_PROJECT ]
+then
+    echo -e "\033[1mGCP project id\033[0m used for testing"
+    read -r CLOUDSDK_CORE_PROJECT
+    echo "CLOUDSDK_CORE_PROJECT=$CLOUDSDK_CORE_PROJECT" >> ./local.conf
+fi
+
+if [ -z $GOOGLE_APPLICATION_CREDENTIALS ]
+then
+    echo -e "\033[1mMissing google application credentials\033[0m used for testing"
+    while true; do
+        read -p "create a new service account for testing? (y/n)" yn
+        case $yn in
+            [Yy]* )
+                TEST_SA=go-bucketfs-test
+                gcloud iam service-accounts create $TEST_SA \
+                    --description="Account that will run tests for go-bucketfs-test" \
+                    --display-name="$TEST_SA"
+                gcloud projects add-iam-policy-binding \
+                    $CLOUDSDK_CORE_PROJECT \
+                    --member="serviceAccount:$TEST_SA@$CLOUDSDK_CORE_PROJECT.iam.gserviceaccount.com" \
+                    --role="roles/storage.admin"
+                gcloud iam service-accounts keys create ~/.gcp/$TEST_SA-key.json \
+                    --iam-account=$TEST_SA@$CLOUDSDK_CORE_PROJECT.iam.gserviceaccount.com
+                GOOGLE_APPLICATION_CREDENTIALS=~/.gcp/$TEST_SA-key.json
+                break;;
+            [Nn]* )
+                echo -e "\033[1mPath to service account credentials for google cloud\033[0m used for testing, need roles/storage.admin"
+                read -r $GOOGLE_APPLICATION_CREDENTIALS
+                break;;
+            * ) echo "Please answer yes or no.";;
+        esac
+    done
+    echo "GOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS" >> ./local.conf
+fi
