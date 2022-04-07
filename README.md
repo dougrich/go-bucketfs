@@ -1,3 +1,3 @@
-# template-go-pkg
+# go-bucketfs
 
-This is a template for quickly scaffolding a new golang package
+go-bucketfs is a go package
