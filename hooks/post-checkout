@@ -1,9 +1,9 @@
 #!/bin/bash
-if test -f ./remote.conf; then
-    source ./remote.conf
+if test -f ./remote.env; then
+    source ./remote.env
 fi 
-if test -f ./local.conf; then
-    source ./local.conf
+if test -f ./local.env; then
+    source ./local.env
 fi 
 
 # Allows us to read user input below, assigns stdin to keyboard
@@ -53,7 +53,7 @@ if [ -z $CLOUDSDK_CORE_PROJECT ]
 then
     echo -e "\033[1mGCP project id\033[0m used for testing"
     read -r CLOUDSDK_CORE_PROJECT
-    echo "CLOUDSDK_CORE_PROJECT=$CLOUDSDK_CORE_PROJECT" >> ./local.conf
+    echo "CLOUDSDK_CORE_PROJECT=$CLOUDSDK_CORE_PROJECT" >> ./local.env
 fi
 
 if [ -z $GOOGLE_APPLICATION_CREDENTIALS ]
@@ -82,5 +82,5 @@ then
             * ) echo "Please answer yes or no.";;
         esac
     done
-    echo "GOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS" >> ./local.conf
+    echo "GOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS" >> ./local.env
 fi
